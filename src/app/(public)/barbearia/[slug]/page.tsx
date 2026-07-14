@@ -1,36 +1,297 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Camera, Clock3, MapPin, ShieldCheck, Star } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Camera,
+  Clock3,
+  MapPin,
+  Scissors,
+  Star,
+} from "lucide-react";
 
-import { BrandMark } from "@/components/brand-mark";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { business, services, staff } from "@/data/demo";
 
+const reviews = [
+  {
+    name: "Thomas P.",
+    copy: "Atendimento preciso, ambiente impecável e um corte que continua bom semanas depois.",
+  },
+  {
+    name: "Rafael M.",
+    copy: "A consulta antes do corte faz toda diferença. Você sente que cada detalhe foi pensado.",
+  },
+  {
+    name: "Noah J.",
+    copy: "Fácil de reservar, pontual e sem pressa. Virou meu endereço fixo em Bruxelas.",
+  },
+];
+
+const navItems = [
+  { href: "#servicos", label: "Serviços" },
+  { href: "#trabalhos", label: "Trabalhos" },
+  { href: "#equipe", label: "Equipe" },
+  { href: "#contato", label: "Contato" },
+];
+
 export default async function BusinessPage({ params }: { params: Promise<{ slug: string }> }) {
-  await params;
+  const { slug } = await params;
+  const bookingHref = `/barbearia/${slug}/agendar`;
+
   return (
-    <main className="min-h-screen bg-background">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-8"><Link href="/"><BrandMark /></Link><div className="flex items-center gap-2"><Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex"><a href="https://www.instagram.com" target="_blank" rel="noreferrer"><Camera data-icon="inline-start" /> Instagram</a></Button><Button asChild><Link href={`/barbearia/${business.slug}/agendar`}>Agendar agora <ArrowRight data-icon="inline-end" /></Link></Button></div></nav>
-      <section className="relative mx-auto max-w-7xl overflow-hidden px-5 pb-10 pt-8 lg:px-8 lg:pb-20 lg:pt-16">
-        <div className="absolute inset-x-[20%] top-0 -z-10 h-72 rounded-full bg-primary/15 blur-3xl" />
-        <div className="grid items-center gap-12 lg:grid-cols-[1fr_.8fr]">
-          <div><Badge variant="outline" className="mb-6 border-primary/30 bg-primary/8 text-primary"><span className="mr-1 size-1.5 rounded-full bg-[#B7F34A]" /> Bruxelas · Desde 2018</Badge><h1 className="font-heading text-balance text-5xl font-semibold leading-[.98] tracking-[-.055em] sm:text-7xl">Precisão no corte. <span className="text-primary">Calma no ritual.</span></h1><p className="mt-6 max-w-xl text-lg leading-8 text-muted-foreground">Barbearia contemporânea no coração de Bruxelas. Uma equipe experiente, técnicas clássicas e o tempo certo para você.</p><div className="mt-8 flex flex-col gap-3 sm:flex-row"><Button asChild size="lg" className="h-12"><Link href={`/barbearia/${business.slug}/agendar`}>Escolher meu horário <ArrowRight data-icon="inline-end" /></Link></Button><Button asChild variant="outline" size="lg" className="h-12"><a href="https://www.google.com/maps/search/?api=1&query=Rue+Antoine+Dansaert+74+Bruxelles" target="_blank" rel="noreferrer"><MapPin data-icon="inline-start" /> Como chegar</a></Button></div><div className="mt-8 flex flex-wrap gap-5 text-sm text-muted-foreground"><span className="flex items-center gap-2"><Star className="size-4 fill-amber-400 text-amber-400" /> {business.rating} ({business.reviews} avaliações)</span><span className="flex items-center gap-2"><ShieldCheck className="size-4 text-primary" /> Reserva protegida por sinal</span></div></div>
-          <div className="relative min-h-[420px] overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_30%_20%,rgba(196,181,253,.25),transparent_25%),linear-gradient(145deg,#1c1825,#0d0d11_64%)] p-6 shadow-2xl">
-            <div className="absolute -right-20 -top-10 size-64 rounded-full border-[42px] border-primary/10" /><div className="absolute bottom-0 left-[18%] top-0 w-px rotate-[24deg] bg-gradient-to-b from-transparent via-primary/60 to-transparent" />
-            <div className="relative flex h-full flex-col justify-between"><div className="flex items-start justify-between"><div><p className="font-mono text-xs uppercase tracking-[.2em] text-primary">AS / BRU</p><p className="font-heading mt-2 text-2xl font-semibold">A cadeira está pronta.</p></div><span className="font-heading text-7xl font-semibold text-white/[.035]">AS</span></div><div className="mt-48 grid grid-cols-2 gap-3"><div className="rounded-2xl border border-white/10 bg-black/25 p-4 backdrop-blur"><Clock3 className="mb-4 text-primary" /><p className="font-heading text-lg font-semibold">Aberto hoje</p><p className="text-xs text-muted-foreground">09:00 — 19:00</p></div><div className="rounded-2xl bg-primary p-4 text-primary-foreground"><p className="text-xs opacity-75">Próximo horário</p><p className="font-heading mt-4 text-3xl font-semibold">13:15</p><p className="text-xs opacity-75">com Lucas</p></div></div></div>
+    <main className="min-h-screen overflow-hidden bg-[#0a0a0a] text-white">
+      <div className="border-b border-white/10 bg-[#0a0a0a] px-5 py-2.5 text-[10px] uppercase tracking-[.22em] text-white/55 lg:px-10">
+        <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-4">
+          <p>Rue Antoine Dansaert 74 · Bruxelas</p>
+          <p className="hidden sm:block">Ter — Sáb · 09:00 — 19:00</p>
+        </div>
+      </div>
+
+      <header className="relative z-20 border-b border-white/10 bg-[#0a0a0a]/95 backdrop-blur">
+        <div className="mx-auto flex h-20 max-w-[1500px] items-center justify-between px-5 lg:px-10">
+          <Link href={`/barbearia/${slug}`} className="flex items-center gap-3" aria-label="AS Barber Club — início">
+            <span className="grid size-9 place-items-center rounded-full border border-white/25">
+              <Scissors className="size-4" aria-hidden="true" />
+            </span>
+            <span className="text-xs font-semibold uppercase tracking-[.2em]">AS / Barber Club</span>
+          </Link>
+          <nav aria-label="Navegação principal" className="hidden items-center gap-8 md:flex">
+            {navItems.map((item) => (
+              <a key={item.href} href={item.href} className="text-[11px] uppercase tracking-[.16em] text-white/55 transition-colors hover:text-white">
+                {item.label}
+              </a>
+            ))}
+          </nav>
+          <Link
+            href={bookingHref}
+            className="group inline-flex h-10 items-center gap-2 rounded-full bg-white px-5 text-[11px] font-semibold uppercase tracking-[.14em] text-black transition-colors hover:bg-[#d9d9d6]"
+          >
+            Agendar <ArrowUpRight className="size-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+          </Link>
+        </div>
+      </header>
+
+      <section className="mx-auto max-w-[1500px] px-5 pb-16 pt-8 lg:px-10 lg:pb-24 lg:pt-12">
+        <div className="mb-6 flex items-end justify-between border-b border-white/15 pb-4">
+          <p className="font-mono text-[10px] uppercase tracking-[.2em] text-white/45">Est. 2018 · Bruxelles</p>
+          <p className="hidden max-w-xs text-right text-xs leading-5 text-white/45 sm:block">
+            Técnica clássica. Estética contemporânea. O tempo certo para você.
+          </p>
+        </div>
+
+        <div className="relative grid gap-3 lg:grid-cols-[.78fr_1.22fr]">
+          <div className="relative z-10 flex min-h-[440px] flex-col justify-between bg-[#151515] p-6 sm:p-9 lg:min-h-[650px] lg:p-10">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[.2em] text-white/45">
+              <span className="size-1.5 rounded-full bg-white" /> Agenda aberta esta semana
+            </div>
+            <div>
+              <p className="mb-5 max-w-xs text-sm leading-6 text-white/55">
+                Uma barbearia de bairro com precisão de estúdio, no centro de Bruxelas.
+              </p>
+              <Link href={bookingHref} className="group inline-flex items-center gap-4 border-b border-white pb-2 text-sm font-medium">
+                Encontrar meu horário
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
+          </div>
+
+          <div className="image-grain relative min-h-[470px] overflow-hidden sm:min-h-[620px] lg:min-h-[650px]">
+            <Image
+              src="/images/barber-hero.png"
+              alt="Barbeiro finalizando um corte com tesoura no AS Barber Club"
+              fill
+              loading="eager"
+              fetchPriority="high"
+              sizes="(max-width: 1024px) 100vw, 65vw"
+              className="object-cover object-[62%_center]"
+            />
+            <div className="absolute inset-0 z-[3] bg-gradient-to-t from-black/55 via-transparent to-transparent" />
+            <div className="absolute bottom-5 right-5 z-[4] rounded-full border border-white/30 bg-black/20 px-4 py-2 text-[10px] uppercase tracking-[.2em] backdrop-blur-sm">
+              Bruxelas / BE
+            </div>
+          </div>
+
+          <h1 className="font-display pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-[clamp(4.25rem,11vw,10.5rem)] uppercase leading-[.78] tracking-[-.07em] sm:left-8 lg:left-7">
+            Corte.<br />Presença.<br /><span className="text-transparent [-webkit-text-stroke:1.5px_white]">Ritual.</span>
+          </h1>
+        </div>
+
+        <div className="grid border-x border-b border-white/15 sm:grid-cols-3">
+          <div className="flex items-center gap-3 border-b border-white/15 px-5 py-5 sm:border-b-0 sm:border-r">
+            <Star className="size-4 fill-white" />
+            <div><p className="text-sm font-medium">{business.rating} / 5</p><p className="text-[10px] uppercase tracking-[.16em] text-white/45">{business.reviews} avaliações</p></div>
+          </div>
+          <div className="flex items-center gap-3 border-b border-white/15 px-5 py-5 sm:border-b-0 sm:border-r">
+            <Clock3 className="size-4" />
+            <div><p className="text-sm font-medium">Próximo horário 13:15</p><p className="text-[10px] uppercase tracking-[.16em] text-white/45">Reserva em 2 minutos</p></div>
+          </div>
+          <div className="flex items-center gap-3 px-5 py-5">
+            <MapPin className="size-4" />
+            <div><p className="text-sm font-medium">Dansaert, Bruxelas</p><p className="text-[10px] uppercase tracking-[.16em] text-white/45">2 min da Bourse</p></div>
           </div>
         </div>
       </section>
 
-      <section className="border-y border-white/8 bg-white/[.015]"><div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 lg:grid-cols-[.55fr_1fr] lg:px-8"><div><p className="text-xs font-medium uppercase tracking-[.2em] text-primary">Menu de serviços</p><h2 className="font-heading mt-3 text-3xl font-semibold tracking-[-.04em]">Escolha seu ritual.</h2><p className="mt-4 text-sm leading-6 text-muted-foreground">Todos os serviços incluem consulta rápida e recomendação de manutenção.</p></div><div className="flex flex-col">{services.map((service) => <Link key={service.id} href={`/barbearia/${business.slug}/agendar?servico=${service.id}`} className="group flex items-center justify-between gap-5 border-b border-white/8 py-5 first:pt-0 last:border-0"><div><div className="flex items-center gap-2"><p className="font-heading text-lg font-medium group-hover:text-primary">{service.name}</p>{service.popular ? <Badge>Mais pedido</Badge> : null}</div><p className="mt-1 text-xs text-muted-foreground">{service.description} · {service.duration} min</p></div><div className="flex items-center gap-4"><span className="font-mono text-sm">€ {service.price}</span><ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1" /></div></Link>)}</div></div></section>
+      <section id="servicos" className="scroll-mt-20 bg-[#f3f3f1] text-black">
+        <div className="mx-auto max-w-[1500px] px-5 py-20 lg:px-10 lg:py-28">
+          <div className="grid gap-10 border-b border-black/20 pb-10 lg:grid-cols-[.65fr_1.35fr] lg:gap-20">
+            <div>
+              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[.22em] text-black/45">01 / Serviços</p>
+              <h2 className="font-display text-5xl uppercase leading-[.85] tracking-[-.055em] sm:text-7xl lg:text-8xl">Seu estilo,<br />bem cuidado.</h2>
+            </div>
+            <div className="flex items-end">
+              <p className="max-w-xl text-lg leading-8 text-black/60">
+                Cada atendimento começa com uma conversa curta e termina quando o acabamento está certo. Sem pressa, sem fórmula pronta.
+              </p>
+            </div>
+          </div>
 
-      <section className="mx-auto max-w-7xl px-5 py-16 lg:px-8 lg:py-24"><div className="mb-9 flex items-end justify-between"><div><p className="text-xs font-medium uppercase tracking-[.2em] text-primary">A equipe</p><h2 className="font-heading mt-3 text-3xl font-semibold">Quem cuida do seu estilo.</h2></div><p className="hidden max-w-sm text-right text-sm text-muted-foreground sm:block">Quatro profissionais, uma mesma obsessão por acabamento.</p></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{staff.map((member) => <Card key={member.id} className="group border-white/8"><CardContent className="p-5"><div className="mb-12 flex justify-between"><Avatar className="size-12"><AvatarFallback style={{ color: member.color, backgroundColor: `${member.color}1c` }}>{member.initials}</AvatarFallback></Avatar><span className="font-mono text-[10px] text-muted-foreground">{member.occupancy}% ocupado</span></div><p className="font-heading text-lg font-semibold">{member.name}</p><p className="text-xs text-muted-foreground">{member.role}</p><Button asChild variant="link" className="mt-3 h-auto px-0"><Link href={`/barbearia/${business.slug}/agendar?profissional=${member.id}`}>Agendar com {member.name.split(" ")[0]} <ArrowRight data-icon="inline-end" /></Link></Button></CardContent></Card>)}</div></section>
+          <div className="mt-4">
+            {services.map((service, index) => (
+              <Link
+                key={service.id}
+                href={`${bookingHref}?servico=${service.id}`}
+                className="group grid items-center gap-3 border-b border-black/20 py-6 transition-colors hover:bg-black hover:px-5 hover:text-white sm:grid-cols-[60px_1fr_auto_auto] sm:gap-8"
+              >
+                <span className="font-mono text-[10px] text-current/45">0{index + 1}</span>
+                <div>
+                  <div className="flex items-center gap-3">
+                    <h3 className="font-heading text-xl font-semibold tracking-[-.035em] sm:text-2xl">{service.name}</h3>
+                    {service.popular ? <span className="rounded-full border border-current/25 px-2 py-1 text-[8px] uppercase tracking-[.16em]">Favorito</span> : null}
+                  </div>
+                  <p className="mt-1 text-xs text-current/55">{service.description}</p>
+                </div>
+                <span className="font-mono text-xs text-current/55">{service.duration} min</span>
+                <span className="flex items-center justify-end gap-4 font-mono text-base">€ {service.price}<ArrowUpRight className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" /></span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      <section className="mx-auto max-w-7xl px-5 pb-20 lg:px-8"><Card className="overflow-hidden border-primary/20 bg-primary/8"><div className="grid lg:grid-cols-2"><CardHeader className="p-7 lg:p-10"><CardTitle className="font-heading text-3xl">Visite o clube.</CardTitle><CardDescription className="max-w-md text-sm leading-6">{business.address}. A dois minutos da Bourse, com estacionamento próximo.</CardDescription><div className="mt-6 flex flex-col gap-3 text-sm"><span className="flex gap-3"><Clock3 className="size-4 text-primary" /> Ter–Sex 09:00–19:00 · Sáb 09:00–18:00</span><span className="flex gap-3"><MapPin className="size-4 text-primary" /> {business.city}, Bélgica</span></div></CardHeader><div className="min-h-64 bg-[radial-gradient(circle_at_center,rgba(139,92,246,.3),transparent_4%),linear-gradient(135deg,transparent_45%,rgba(255,255,255,.05)_45%,rgba(255,255,255,.05)_48%,transparent_48%),#121217] bg-[length:auto,36px_36px]" aria-label="Mapa preparado do endereço da barbearia" /></div></Card></section>
+      <section id="trabalhos" className="scroll-mt-20 bg-[#0a0a0a]">
+        <div className="mx-auto max-w-[1500px] px-5 py-20 lg:px-10 lg:py-28">
+          <div className="mb-10 flex items-end justify-between border-b border-white/15 pb-8">
+            <div>
+              <p className="mb-4 text-[10px] uppercase tracking-[.22em] text-white/45">02 / Trabalhos</p>
+              <h2 className="font-display text-5xl uppercase leading-[.85] tracking-[-.055em] sm:text-7xl lg:text-8xl">Detalhe é<br />a diferença.</h2>
+            </div>
+            <a href="https://www.instagram.com" target="_blank" rel="noreferrer" className="hidden items-center gap-2 text-xs uppercase tracking-[.16em] sm:flex">
+              <Camera className="size-4" /> @asbarberclub
+            </a>
+          </div>
 
-      <footer className="border-t border-white/8"><div className="mx-auto flex max-w-7xl flex-col justify-between gap-5 px-5 py-8 sm:flex-row sm:items-center lg:px-8"><BrandMark /><p className="text-xs text-muted-foreground">© 2026 AS Barber Club · Privacidade · Cancelamentos</p></div></footer>
+          <div className="grid auto-rows-[220px] gap-3 sm:grid-cols-2 sm:auto-rows-[300px] lg:grid-cols-12 lg:auto-rows-[250px]">
+            <figure className="image-grain relative overflow-hidden sm:row-span-2 lg:col-span-7">
+              <Image src="/images/barber-detail.png" alt="Acabamento preciso de barba com navalha" fill sizes="(max-width: 1024px) 100vw, 60vw" className="object-cover transition-transform duration-700 hover:scale-[1.02]" />
+              <figcaption className="absolute bottom-4 left-4 z-[3] font-mono text-[9px] uppercase tracking-[.18em]">Navalha / acabamento</figcaption>
+            </figure>
+            <div className="flex flex-col justify-between bg-white p-7 text-black sm:row-span-1 lg:col-span-5">
+              <Scissors className="size-6" />
+              <p className="font-heading max-w-sm text-2xl font-semibold leading-tight tracking-[-.04em]">“Não existe bom corte sem entender primeiro quem vai usá-lo.”</p>
+            </div>
+            <figure className="image-grain relative overflow-hidden lg:col-span-5">
+              <Image src="/images/barber-hero.png" alt="Atendimento no estúdio AS Barber Club" fill sizes="(max-width: 1024px) 100vw, 40vw" className="object-cover object-right transition-transform duration-700 hover:scale-[1.02]" />
+              <figcaption className="absolute bottom-4 left-4 z-[3] font-mono text-[9px] uppercase tracking-[.18em]">Corte / textura</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white text-black">
+        <div className="mx-auto grid max-w-[1500px] gap-12 px-5 py-20 lg:grid-cols-[1fr_1fr] lg:px-10 lg:py-28">
+          <div className="relative min-h-[520px] overflow-hidden bg-[#d9d9d6]">
+            <Image src="/images/barber-team.png" alt="Equipe de quatro barbeiros do AS Barber Club" fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover object-center grayscale" />
+            <span className="absolute bottom-5 left-5 bg-white px-4 py-2 font-mono text-[9px] uppercase tracking-[.18em]">Equipe / 2026</span>
+          </div>
+          <div className="flex flex-col justify-between lg:py-4">
+            <div>
+              <p className="mb-5 text-[10px] font-semibold uppercase tracking-[.22em] text-black/45">03 / Sobre o clube</p>
+              <h2 className="font-display text-5xl uppercase leading-[.85] tracking-[-.055em] sm:text-7xl">Bom corte.<br />Boa conversa.<br />Sem excessos.</h2>
+              <p className="mt-8 max-w-xl text-base leading-7 text-black/60">
+                Criamos um lugar para desacelerar e sair melhor do que entrou. Nossa equipe combina repertório clássico, observação e técnica para construir um visual que funciona na sua rotina.
+              </p>
+            </div>
+            <div className="mt-12 grid grid-cols-2 border-y border-black/20">
+              <div className="border-r border-black/20 py-6 pr-6"><p className="font-display text-5xl tracking-[-.05em]">8+</p><p className="mt-2 text-[10px] uppercase tracking-[.16em] text-black/45">Anos de estúdio</p></div>
+              <div className="py-6 pl-6"><p className="font-display text-5xl tracking-[-.05em]">12K</p><p className="mt-2 text-[10px] uppercase tracking-[.16em] text-black/45">Cortes realizados</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="equipe" className="scroll-mt-20 border-t border-white/10 bg-[#151515]">
+        <div className="mx-auto max-w-[1500px] px-5 py-20 lg:px-10 lg:py-28">
+          <div className="mb-10 grid gap-6 lg:grid-cols-2">
+            <div><p className="mb-4 text-[10px] uppercase tracking-[.22em] text-white/45">04 / Equipe</p><h2 className="font-display text-5xl uppercase leading-[.85] tracking-[-.055em] sm:text-7xl">Escolha<br />sua cadeira.</h2></div>
+            <p className="max-w-md self-end text-sm leading-6 text-white/50 lg:justify-self-end">Quatro profissionais, estilos diferentes e a mesma atenção ao acabamento.</p>
+          </div>
+          <div className="grid border-l border-t border-white/15 sm:grid-cols-2 lg:grid-cols-4">
+            {staff.map((member, index) => (
+              <Link key={member.id} href={`${bookingHref}?profissional=${member.id}`} className="group flex min-h-64 flex-col justify-between border-b border-r border-white/15 p-6 transition-colors hover:bg-white hover:text-black">
+                <div className="flex items-start justify-between">
+                  <span className="font-display text-5xl text-current/15">0{index + 1}</span>
+                  <ArrowUpRight className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </div>
+                <div><h3 className="font-heading text-xl font-semibold tracking-[-.035em]">{member.name}</h3><p className="mt-1 text-xs text-current/50">{member.role} · {member.occupancy}% ocupado</p></div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#f3f3f1] text-black">
+        <div className="mx-auto max-w-[1500px] px-5 py-20 lg:px-10 lg:py-28">
+          <div className="grid gap-10 lg:grid-cols-[.55fr_1.45fr]">
+            <div>
+              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[.22em] text-black/45">05 / Clientes</p>
+              <h2 className="font-display text-5xl uppercase leading-[.85] tracking-[-.055em] sm:text-7xl">Quem senta,<br />volta.</h2>
+              <div className="mt-8 flex items-center gap-3"><div className="flex gap-0.5">{Array.from({ length: 5 }).map((_, index) => <Star key={index} className="size-3.5 fill-black" />)}</div><span className="font-mono text-xs">4.9 · Google</span></div>
+            </div>
+            <div className="grid border-l border-t border-black/20 md:grid-cols-3">
+              {reviews.map((review, index) => (
+                <figure key={review.name} className="flex min-h-64 flex-col justify-between border-b border-r border-black/20 p-6">
+                  <span className="font-display text-4xl text-black/15">“</span>
+                  <blockquote className="text-sm leading-6 text-black/65">{review.copy}</blockquote>
+                  <figcaption className="flex items-center justify-between border-t border-black/15 pt-4 text-[10px] uppercase tracking-[.14em]"><span>{review.name}</span><span>0{index + 1}</span></figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-20 grid overflow-hidden bg-black text-white lg:grid-cols-[1fr_auto]">
+            <div className="p-8 sm:p-12"><p className="mb-5 text-[10px] uppercase tracking-[.2em] text-white/45">Primeira visita</p><h3 className="font-display max-w-4xl text-5xl uppercase leading-[.85] tracking-[-.055em] sm:text-7xl">Seu primeiro ritual<br />começa com 10% off.</h3></div>
+            <Link href={bookingHref} className="group flex min-h-48 items-center justify-center gap-3 border-t border-white/20 px-10 text-xs font-semibold uppercase tracking-[.16em] transition-colors hover:bg-white hover:text-black lg:min-h-full lg:border-l lg:border-t-0">
+              Agendar agora <ArrowUpRight className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section id="contato" className="scroll-mt-20 bg-[#0a0a0a]">
+        <div className="mx-auto max-w-[1500px] px-5 py-20 lg:px-10 lg:py-28">
+          <div className="grid gap-12 border-t border-white/15 pt-10 lg:grid-cols-2">
+            <div>
+              <p className="mb-5 text-[10px] uppercase tracking-[.22em] text-white/45">06 / Contato</p>
+              <h2 className="font-display text-6xl uppercase leading-[.82] tracking-[-.06em] sm:text-8xl lg:text-9xl">A cadeira<br />está pronta.</h2>
+              <Link href={bookingHref} className="group mt-10 inline-flex h-14 items-center gap-4 rounded-full bg-white px-7 text-xs font-semibold uppercase tracking-[.16em] text-black hover:bg-[#d9d9d6]">Escolher horário <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" /></Link>
+            </div>
+            <div className="grid gap-8 border-l border-white/15 pl-6 sm:grid-cols-2 sm:pl-10">
+              <div><p className="text-[10px] uppercase tracking-[.18em] text-white/40">Endereço</p><p className="mt-4 max-w-xs text-sm leading-6">{business.address}<br />{business.city}, Bélgica</p><a href="https://www.google.com/maps/search/?api=1&query=Rue+Antoine+Dansaert+74+Bruxelles" target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center gap-2 border-b border-white/40 pb-1 text-xs">Abrir no mapa <ArrowUpRight className="size-3" /></a></div>
+              <div><p className="text-[10px] uppercase tracking-[.18em] text-white/40">Horários</p><div className="mt-4 space-y-2 text-sm"><p className="flex justify-between gap-8"><span>Ter — Sex</span><span className="text-white/50">09 — 19h</span></p><p className="flex justify-between gap-8"><span>Sábado</span><span className="text-white/50">09 — 18h</span></p><p className="flex justify-between gap-8"><span>Dom — Seg</span><span className="text-white/50">Fechado</span></p></div></div>
+              <div><p className="text-[10px] uppercase tracking-[.18em] text-white/40">Telefone</p><a href={`tel:${business.phone.replaceAll(" ", "")}`} className="mt-4 block text-sm hover:underline">{business.phone}</a></div>
+              <div><p className="text-[10px] uppercase tracking-[.18em] text-white/40">Social</p><a href="https://www.instagram.com" target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm hover:underline"><Camera className="size-4" /> @asbarberclub</a></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer className="border-t border-white/10 px-5 py-8 lg:px-10">
+        <div className="mx-auto flex max-w-[1500px] flex-col gap-4 text-[9px] uppercase tracking-[.18em] text-white/35 sm:flex-row sm:items-center sm:justify-between">
+          <p>© 2026 AS Barber Club</p>
+          <p>Bruxelas · Bélgica · Feito para durar</p>
+        </div>
+      </footer>
     </main>
   );
 }

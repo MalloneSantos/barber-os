@@ -44,10 +44,10 @@ export const revenueTrend = [
 ] as const;
 
 export const staff = [
-  { id: "lucas", name: "Lucas Moreira", role: "Barbeiro sênior", initials: "LM", color: "#8B5CF6", revenue: 6420, occupancy: 94 },
-  { id: "diego", name: "Diego Santos", role: "Barbeiro", initials: "DS", color: "#C4B5FD", revenue: 5840, occupancy: 88 },
-  { id: "marco", name: "Marco Almeida", role: "Barbeiro", initials: "MA", color: "#B7F34A", revenue: 4920, occupancy: 81 },
-  { id: "andre", name: "André Costa", role: "Barbeiro", initials: "AC", color: "#F59E0B", revenue: 4380, occupancy: 74 },
+  { id: "lucas", name: "Lucas Moreira", role: "Barbeiro sênior", initials: "LM", color: "#F5F5F5", revenue: 6420, occupancy: 94 },
+  { id: "diego", name: "Diego Santos", role: "Barbeiro", initials: "DS", color: "#D4D4D4", revenue: 5840, occupancy: 88 },
+  { id: "marco", name: "Marco Almeida", role: "Barbeiro", initials: "MA", color: "#A3A3A3", revenue: 4920, occupancy: 81 },
+  { id: "andre", name: "André Costa", role: "Barbeiro", initials: "AC", color: "#737373", revenue: 4380, occupancy: 74 },
 ] as const;
 
 export const appointments = [
@@ -131,4 +131,3 @@ export const demoAccounts = [
 
 export const formatEuro = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(value);
-

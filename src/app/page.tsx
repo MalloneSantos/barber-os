@@ -50,7 +50,7 @@ export default function LandingPage() {
           <div className="mt-9 flex flex-col gap-3">
             {outcomes.map((outcome) => (
               <div key={outcome} className="flex items-center gap-3 text-sm text-muted-foreground">
-                <span className="grid size-5 place-items-center rounded-full bg-[#B7F34A]/12 text-[#B7F34A]"><Check className="size-3" aria-hidden="true" /></span>
+                <span className="grid size-5 place-items-center rounded-full bg-white text-black"><Check className="size-3" aria-hidden="true" /></span>
                 {outcome}
               </div>
             ))}
@@ -65,14 +65,14 @@ export default function LandingPage() {
                 <p className="font-heading text-sm font-semibold">Pulso da operação</p>
                 <p className="text-xs text-muted-foreground">Terça-feira, 14 de julho</p>
               </div>
-              <Badge className="bg-[#B7F34A]/12 text-[#B7F34A]">Ao vivo</Badge>
+              <Badge className="border border-white/20 bg-white/5 text-white">Ao vivo</Badge>
             </div>
             <CardContent className="p-5 sm:p-7">
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-2 rounded-2xl border border-white/8 bg-black/15 p-4">
                   <p className="text-xs text-muted-foreground">Receita recuperada</p>
                   <p className="font-heading mt-2 text-3xl font-semibold">€ 1.600</p>
-                  <p className="mt-1 text-xs text-[#B7F34A]">+24% este mês</p>
+                  <p className="mt-1 text-xs text-white">+24% este mês</p>
                 </div>
                 <div className="rounded-2xl bg-primary p-4 text-primary-foreground">
                   <p className="text-xs opacity-75">Ocupação</p>
@@ -88,7 +88,7 @@ export default function LandingPage() {
                 <div className="flex h-32 items-end gap-2 rounded-2xl border border-white/8 bg-black/15 p-4">
                   {weeklyOccupancy.map((day) => (
                     <div key={day.day} className="flex h-full flex-1 flex-col justify-end gap-2">
-                      <div className="rounded-md bg-gradient-to-t from-primary to-[#C4B5FD] transition-opacity hover:opacity-80" style={{ height: `${day.occupancy}%` }} />
+                      <div className="rounded-md bg-gradient-to-t from-white/35 to-white transition-opacity hover:opacity-80" style={{ height: `${day.occupancy}%` }} />
                       <span className="text-center font-mono text-[10px] text-muted-foreground">{day.day}</span>
                     </div>
                   ))}
@@ -98,7 +98,7 @@ export default function LandingPage() {
                 {impactMetrics.slice(0, 2).map((item) => (
                   <div key={item.label} className="flex items-center justify-between rounded-xl border border-white/8 px-3 py-3">
                     <div><p className="text-xs text-muted-foreground">{item.label}</p><p className="font-heading font-semibold">€ {item.value}</p></div>
-                    <span className="size-2 rounded-full bg-[#B7F34A] shadow-[0_0_12px_#B7F34A]" />
+                    <span className="size-2 rounded-full bg-white" />
                   </div>
                 ))}
               </div>
@@ -109,4 +109,3 @@ export default function LandingPage() {
     </main>
   );
 }
-

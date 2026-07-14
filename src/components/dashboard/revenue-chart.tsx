@@ -19,13 +19,13 @@ export function RevenueChart() {
       <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
         <AreaChart data={revenueTrend} margin={{ left: -24, right: 8, top: 12, bottom: 0 }}>
           <defs>
-            <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#8B5CF6" stopOpacity={0.38} /><stop offset="100%" stopColor="#8B5CF6" stopOpacity={0} /></linearGradient>
+            <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F5F5F5" stopOpacity={0.28} /><stop offset="100%" stopColor="#F5F5F5" stopOpacity={0} /></linearGradient>
           </defs>
           <CartesianGrid stroke="rgba(255,255,255,.06)" vertical={false} />
           <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "#858590", fontSize: 11 }} />
           <YAxis tickLine={false} axisLine={false} tick={{ fill: "#858590", fontSize: 11 }} tickFormatter={(value) => `€${value / 1000}k`} />
-          <Tooltip cursor={{ stroke: "rgba(196,181,253,.3)" }} contentStyle={{ background: "#17171d", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12, fontSize: 12 }} formatter={(value) => [`€ ${Number(value).toLocaleString("pt-BR")}`, "Receita"]} />
-          <Area type="monotone" dataKey="revenue" stroke="#A78BFA" strokeWidth={2.4} fill="url(#revenueFill)" />
+          <Tooltip cursor={{ stroke: "rgba(255,255,255,.25)" }} contentStyle={{ background: "#171717", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12, fontSize: 12 }} formatter={(value) => [`€ ${Number(value).toLocaleString("pt-BR")}`, "Receita"]} />
+          <Area type="monotone" dataKey="revenue" stroke="#F5F5F5" strokeWidth={2.4} fill="url(#revenueFill)" />
         </AreaChart>
       </ResponsiveContainer>
     </div>

@@ -32,7 +32,7 @@ export function AgendaWorkspace() {
           </div>
         </CardContent>
       </Card>
-      <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground"><span className="flex items-center gap-2"><span className="size-2 rounded-full bg-primary" /> Confirmado</span><span className="flex items-center gap-2"><span className="size-2 rounded-full bg-amber-400" /> Sinal pendente</span><Badge variant="outline">Arraste e solte preparado para V2</Badge></div>
+      <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground"><span className="flex items-center gap-2"><span className="size-2 rounded-full bg-primary" /> Confirmado</span><span className="flex items-center gap-2"><span className="size-2 rounded-full bg-white/40" /> Sinal pendente</span><Badge variant="outline">Arraste e solte preparado para V2</Badge></div>
     </div>
   );
 }
