@@ -141,10 +141,13 @@ model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
+  tenantId     String
   expires      DateTime @db.Timestamptz(3)
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
+  @@index([userId, expires])
+  @@index([tenantId, expires])
 }
 
 model Tenant {
@@ -169,6 +172,7 @@ model Tenant {
   deletedAt                DateTime?                  @db.Timestamptz(3)
   units                    BusinessUnit[]
   memberships              Membership[]
+  sessions                 Session[]
   customers                Customer[]
   staff                    Staff[]
   categories               ServiceCategory[]

@@ -1,0 +1,73 @@
+import { randomUUID } from "node:crypto";
+
+import { calculateDeposit } from "@/domain/finance/deposits";
+import { db } from "@/server/db";
+import { getPublicAvailability } from "@/server/data/public-booking";
+import { MockPaymentGateway } from "@/server/integrations/payment";
+import { BookingError, selectBookingSlot } from "@/server/services/booking";
+
+export type CreatePublicBookingInput = {
+  slug: string;
+  serviceId: string;
+  staffId: string;
+  date: string;
+  time: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone: string;
+};
+
+export async function createPublicBooking(input: CreatePublicBookingInput) {
+  const tenant = await db.tenant.findFirst({ where: { slug: input.slug, deletedAt: null }, select: { id: true, currency: true, defaultDepositCents: true, cancellationNoticeHours: true } });
+  if (!tenant) throw new BookingError("RESOURCE_NOT_FOUND");
+  const service = await db.service.findFirst({ where: { id: input.serviceId, tenantId: tenant.id, isActive: true, deletedAt: null }, select: { id: true, name: true, priceCents: true, durationMinutes: true, depositRequired: true } });
+  if (!service) throw new BookingError("RESOURCE_NOT_FOUND");
+
+  const availability = await getPublicAvailability({ slug: input.slug, date: input.date, serviceId: service.id, staffId: input.staffId });
+  if (!availability) throw new BookingError("RESOURCE_NOT_FOUND");
+  const selected = selectBookingSlot(availability.slots, input.time, input.staffId);
+  const appointmentId = randomUUID();
+  const depositCents = service.depositRequired ? calculateDeposit({ totalCents: service.priceCents, type: "FIXED", value: tenant.defaultDepositCents }) : 0;
+  const paymentResult = depositCents > 0
+    ? await new MockPaymentGateway().chargeDeposit({ tenantId: tenant.id, appointmentId, amountCents: depositCents, currency: "EUR" })
+    : null;
+  if (paymentResult?.status === "FAILED") throw new BookingError("PAYMENT_FAILED");
+
+  try {
+    return await db.$transaction(async (tx) => {
+      const customer = await tx.customer.upsert({
+        where: { tenantId_phone: { tenantId: tenant.id, phone: input.phone } },
+        update: { firstName: input.firstName, lastName: input.lastName, email: input.email || null },
+        create: { tenantId: tenant.id, firstName: input.firstName, lastName: input.lastName, email: input.email || null, phone: input.phone },
+      });
+      const appointment = await tx.appointment.create({
+        data: {
+          id: appointmentId,
+          tenantId: tenant.id,
+          customerId: customer.id,
+          staffId: selected.staffId,
+          startsAt: new Date(selected.startsAt),
+          endsAt: new Date(selected.endsAt),
+          status: "CONFIRMED",
+          source: "ONLINE",
+          totalCents: service.priceCents,
+          depositCents,
+          services: { create: { tenantId: tenant.id, serviceId: service.id, priceCents: service.priceCents, durationMinutes: service.durationMinutes } },
+          statusHistory: { create: { tenantId: tenant.id, toStatus: "CONFIRMED", reason: "Reserva pública confirmada" } },
+        },
+        select: { id: true, startsAt: true, staff: { select: { displayName: true } } },
+      });
+      if (paymentResult) {
+        const payment = await tx.payment.create({ data: { tenantId: tenant.id, appointmentId: appointment.id, amountCents: depositCents, status: "PAID", method: "ONLINE", externalId: paymentResult.externalId, metadata: { provider: "mock", simulated: true }, paidAt: paymentResult.processedAt } });
+        await tx.deposit.create({ data: { tenantId: tenant.id, appointmentId: appointment.id, paymentId: payment.id, amountCents: depositCents, status: "PAID" } });
+      }
+      await tx.notification.create({ data: { tenantId: tenant.id, customerId: customer.id, channel: "EMAIL", status: "SENT", title: "Reserva confirmada", body: `${service.name} confirmado para ${input.date} às ${input.time}. Envio simulado.`, metadata: { simulated: true }, sentAt: new Date() } });
+      return { appointmentId: appointment.id, serviceName: service.name, staffName: appointment.staff.displayName, startsAt: appointment.startsAt, totalCents: service.priceCents, depositCents, cancellationNoticeHours: tenant.cancellationNoticeHours };
+    });
+  } catch (error) {
+    const details = error instanceof Error ? `${error.name} ${error.message}` : String(error);
+    if (details.includes("Appointment_staff_active_time_excl") || details.includes("23P01") || details.includes("ExclusionConstraintViolation")) throw new BookingError("SLOT_CONFLICT");
+    throw error;
+  }
+}

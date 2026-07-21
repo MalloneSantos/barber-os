@@ -1,146 +1,101 @@
-# AS Barber Club — Barber OS
+# Barber OS — MVP multiempresa
 
-Micro SaaS multiempresa para gestão, crescimento e automação de barbearias. O MVP combina agenda, clientes, fila de espera, sinais, fidelidade, produtos, campanhas e financeiro em uma experiência premium em português do Brasil.
+SaaS para operação de barbearias com página pública, agenda, clientes, equipe, serviços, fila de espera, sinal, fidelidade, estoque e financeiro básico. As rotas operacionais usam PostgreSQL via Prisma; `src/data/demo.ts` permanece apenas na landing institucional.
 
-## O que está implementado
+## O que funciona
 
-- landing page e página pública da barbearia;
-- login demonstrativo com sessão JWT em cookie HTTP-only;
-- quatro personas com papéis distintos;
-- dashboard com receita, ocupação, agenda, impacto e insights;
-- agenda diária por profissional;
-- fluxo completo de reserva em cinco etapas;
-- pagamento simulado do sinal e confirmação;
-- fila de espera com ranking e oferta simulada;
-- CRM demonstrativo, equipe, serviços, produtos e campanhas;
-- fidelidade e financeiro básico;
-- configurações do estabelecimento e políticas;
-- schema PostgreSQL/Prisma com 37 entidades;
-- migration inicial e seed com 100 clientes;
-- regras críticas cobertas por Vitest.
+- login por e-mail/senha com bcrypt e sessão opaca persistida no banco;
+- cadastro que cria usuário, tenant, membership `OWNER`, unidade e categoria inicial em transação;
+- isolamento por `tenantId` derivado da sessão e autorização repetida nas Server Actions;
+- criação e edição persistidas de clientes, equipe, serviços e produtos, além de campanhas, recompensas e despesas;
+- arquivamento lógico de clientes, equipe, serviços e produtos;
+- gestão de jornada semanal e bloqueios (`TimeOff`), usados em tempo real na disponibilidade pública;
+- reserva pública transacional com cliente, agendamento, serviço, histórico, pagamento, sinal e notificação;
+- prevenção de conflito no PostgreSQL com `btree_gist` + `tstzrange`;
+- cancelamento com crédito dentro do prazo ou retenção tardia;
+- fila de espera persistida e oferta com notificação simulada;
+- dashboard, busca, notificações, fidelidade, estoque, financeiro e CSV calculados do banco;
+- seed repetível com dois tenants e testes unitários, integração e navegador.
 
-## Stack
+## Instalação
 
-- Next.js 16 com App Router, React 19 e TypeScript strict;
-- Tailwind CSS 4 e shadcn/ui;
-- Zod, React Hook Form, Recharts e Lucide;
-- PostgreSQL 17 e Prisma 7 com adapter `pg`;
-- Vitest e Playwright preparado;
-- `jose` para a sessão demonstrativa.
+Requisitos: Node.js 22+, npm e PostgreSQL 17 (local ou Docker).
 
-## Arquitetura
-
-```text
-src/
-  app/                    rotas públicas, autenticação e painel
-  components/             primitives shadcn e composição por domínio
-  data/demo.ts            dataset único da experiência sem banco
-  domain/                 regras puras e testáveis
-  server/auth/            sessão, personas e contexto autenticado
-  server/integrations/    contratos e adapters mock
-  server/db.ts            Prisma Client com adapter PostgreSQL
-prisma/
-  schema.prisma           modelo multiempresa
-  migrations/             migration inicial reproduzível
-  seed.ts                 demonstração persistente
-tests/domain/             testes das regras críticas
-docs/                     decisões e fluxos
-```
-
-As telas leem do dataset demonstrativo para que o produto seja navegável sem infraestrutura. O schema e o seed equivalentes permitem trocar os seletores por repositórios Prisma módulo a módulo sem alterar a interface.
-
-## Instalação rápida
-
-Requisitos: Node.js 22+, npm e Docker.
+Com Docker:
 
 ```bash
+cd /Users/gverdonck/Documents/barber
 npm install
 cp .env.example .env
 docker compose up -d
+npm run db:generate
 npx prisma migrate deploy
 npm run db:seed
 npm run dev
 ```
 
-Acesse [http://localhost:3000](http://localhost:3000).
-
-## Variáveis de ambiente
-
-| Variável | Obrigatória | Uso |
-|---|---:|---|
-| `DATABASE_URL` | sim para persistência | Conexão PostgreSQL |
-| `AUTH_SECRET` | sim | Assinatura HS256 da sessão; mínimo 32 caracteres |
-| `NEXT_PUBLIC_APP_URL` | produção | URL canônica |
-| `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | não | OAuth futuro via Auth.js |
-| `STRIPE_SECRET_KEY` | não | Gateway real futuro |
-| `STRIPE_WEBHOOK_SECRET` | não | Validação de webhooks futura |
-
-Nunca coloque segredos em arquivos versionados. `.env*` é ignorado, com exceção de `.env.example`.
-
-## Contas de demonstração
-
-Senha para todas as contas: `demo123`.
-
-| Perfil | E-mail |
-|---|---|
-| Proprietário | `owner@asbarber.be` |
-| Gerente | `gerente@asbarber.be` |
-| Recepcionista | `recepcao@asbarber.be` |
-| Profissional | `lucas@asbarber.be` |
-
-## Comandos
+Com PostgreSQL instalado no macOS, crie o banco e ajuste apenas o usuário da URL no `.env`:
 
 ```bash
-npm run dev           # servidor de desenvolvimento
-npm test              # regras de negócio
-npm run test:coverage # cobertura HTML/texto
-npm run lint          # ESLint sem warnings
-npm run typecheck     # TypeScript strict
-npm run build         # produção
-npm run db:generate   # gerar Prisma Client
-npm run db:validate   # validar schema
-npm run db:seed       # seed persistente
+createdb barber_os
+cp .env.example .env
+# Exemplo sem senha local: postgresql://SEU_USUARIO@localhost:5432/barber_os?schema=public
+npm install
+npm run db:generate
+npx prisma migrate deploy
+npm run db:seed
+npm run dev
 ```
 
-## Multiempresa e segurança
+Acesse [http://localhost:3000](http://localhost:3000) e a página pública em [http://localhost:3000/barbearia/as-barber-club](http://localhost:3000/barbearia/as-barber-club).
 
-`User` é a identidade global e `Membership` liga essa identidade ao `Tenant`. Toda entidade operacional contém `tenantId`. Consultas de produção devem receber um `TenantContext` derivado da sessão e nunca aceitar um tenant arbitrário do navegador. O teste `assertTenant` demonstra a barreira de aplicação; a evolução recomendada adiciona Row Level Security no PostgreSQL usando uma variável de transação.
+> `npm run db:seed` reconstrói somente o tenant `tenant_as_barber`. Use esse seed apenas no ambiente de desenvolvimento/demonstração.
 
-O painel é protegido no layout do servidor. A interface pode ocultar ações por papel, mas a autorização decisiva pertence ao servidor. Valores monetários são armazenados em centavos inteiros. Ações sensíveis têm destino em `AuditLog`.
+## Contas seedadas
 
-## Integrações
+Senha: `demo123`.
 
-`PaymentGateway` separa a reserva do provedor de pagamentos. `MockPaymentGateway` confirma o sinal localmente. Uma implementação Stripe deve:
+| Papel | E-mail | Tenant |
+|---|---|---|
+| OWNER | `owner@asbarber.be` | AS Barber Club |
+| MANAGER | `gerente@asbarber.be` | AS Barber Club |
+| RECEPTIONIST | `recepcao@asbarber.be` | AS Barber Club |
+| PROFESSIONAL | `lucas@asbarber.be` | AS Barber Club |
+| OWNER | `owner@northcut.be` | North Cut Demo |
 
-1. criar PaymentIntent com idempotency key igual ao ID do agendamento;
-2. armazenar apenas IDs e status, nunca dados do cartão;
-3. confirmar mudanças por webhook assinado;
-4. usar Stripe Connect quando houver repasse aos tenants.
+## Comandos de verificação
 
-E-mail e WhatsApp seguem `MessageProvider`. Os adapters atuais retornam IDs simulados. Provedores reais devem ser chamados por uma fila e registrar entrega em `Notification`.
+```bash
+npm install
+npm run db:generate
+npm run db:validate
+npx prisma migrate deploy
+npm run db:seed
+npm run lint
+npm run typecheck
+npm test -- --run
+npm run build
+npm run test:e2e
+```
 
-## Testes
+## Arquitetura e segurança
 
-Vitest cobre:
+- Server Components fazem leituras; Server Actions fazem mutações com Zod.
+- A sessão contém apenas um token aleatório no cookie `httpOnly`; o estado e o tenant ativo ficam em `Session`.
+- Toda busca por recurso autenticado combina ID e `tenantId` da sessão.
+- A navegação oculta módulos sem permissão, mas a decisão final sempre acontece no servidor.
+- Valores monetários são inteiros em centavos e alterações sensíveis geram `AuditLog`.
+- O banco impede sobreposição ativa para o mesmo profissional, inclusive sob concorrência.
 
-- disponibilidade e conflitos;
-- sinal fixo e percentual;
-- crédito ou retenção no cancelamento;
-- ranking da fila;
-- fidelidade, ticket médio e ocupação;
-- isolamento de tenant e RBAC;
-- autenticação das personas.
+Veja [arquitetura](docs/architecture.md), [permissões](docs/permissions.md), [agendamento](docs/booking.md), [fila](docs/waitlist.md) e [sinal](docs/deposits.md).
 
-Playwright está instalado para a evolução do smoke E2E. O caminho prioritário é login → painel → agenda e página pública → reserva → sinal → confirmação.
+## Simulações e integrações externas
 
-## Decisões e limitações do MVP
+O MVP persiste o fluxo, mas não movimenta dinheiro nem envia mensagens reais:
 
-- O banco é PostgreSQL, mas a UI usa seletores demonstrativos para iniciar sem Docker.
-- O login demonstrativo é próprio e substituível por Auth.js; Google/Apple não são chamados.
-- Stripe, e-mail e WhatsApp são mocks atrás de interfaces.
-- A agenda prioriza a visualização diária por profissional; semana e drag-and-drop ficam para V2.
-- Campanhas e insights usam regras determinísticas, sem IA real.
-- Não há cobrança recorrente nem marketplace neste ciclo.
+- `MockPaymentGateway` retorna pagamento aprovado e um ID externo simulado;
+- e-mail e WhatsApp retornam IDs simulados e gravam `Notification` como envio simulado;
+- recuperação de senha responde de forma neutra, sem gerar token ou enviar e-mail;
+- campanhas são cadastradas, mas não possuem automação de disparo.
 
-Consulte [booking](docs/booking.md), [sinal](docs/deposits.md), [fila de espera](docs/waitlist.md) e [permissões](docs/permissions.md).
-
+Stripe/adquirente, WhatsApp Business, provedor de e-mail, OAuth, filas de jobs, observabilidade e armazenamento de imagens continuam dependendo de integrações externas.

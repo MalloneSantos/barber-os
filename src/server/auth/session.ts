@@ -1,40 +1,18 @@
+import { randomBytes } from "node:crypto";
+import { cache } from "react";
 import { cookies } from "next/headers";
-import { jwtVerify, SignJWT } from "jose";
+
+import { db } from "@/server/db";
+import {
+  sessionFromRecord,
+  type AuthenticatedIdentity,
+} from "@/server/auth/service";
 
 const COOKIE_NAME = "barber_session";
+const SESSION_DURATION_MS = 8 * 60 * 60 * 1000;
 
-export type DemoSession = {
-  email: string;
-  name: string;
-  role: "OWNER" | "MANAGER" | "RECEPTIONIST" | "PROFESSIONAL";
-  tenantId: "tenant_as_barber";
-};
-
-function secret() {
-  const value = process.env.AUTH_SECRET;
-  if (!value || value.length < 32) throw new Error("AUTH_SECRET_MISSING");
-  return new TextEncoder().encode(value);
-}
-
-export async function createSessionToken(session: DemoSession) {
-  return new SignJWT(session)
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("8h")
-    .sign(secret());
-}
-
-export async function getSession(): Promise<DemoSession | null> {
-  const token = (await cookies()).get(COOKIE_NAME)?.value;
-  if (!token) return null;
-
-  try {
-    const { payload } = await jwtVerify(token, secret());
-    return payload as DemoSession;
-  } catch {
-    return null;
-  }
-}
+export type AppSession = AuthenticatedIdentity;
+export type DemoSession = AppSession;
 
 export const sessionCookie = {
   name: COOKIE_NAME,
@@ -43,7 +21,68 @@ export const sessionCookie = {
     sameSite: "lax" as const,
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 60 * 60 * 8,
+    maxAge: SESSION_DURATION_MS / 1000,
   },
 };
 
+export async function createDatabaseSession(identity: Pick<AppSession, "userId" | "tenantId">) {
+  const sessionToken = randomBytes(32).toString("base64url");
+  const expires = new Date(Date.now() + SESSION_DURATION_MS);
+
+  await db.session.create({
+    data: {
+      sessionToken,
+      userId: identity.userId,
+      tenantId: identity.tenantId,
+      expires,
+    },
+  });
+
+  return { sessionToken, expires };
+}
+
+export const getSession = cache(async (): Promise<AppSession | null> => {
+  const sessionToken = (await cookies()).get(COOKIE_NAME)?.value;
+  if (!sessionToken) return null;
+
+  const record = await db.session.findUnique({
+    where: { sessionToken },
+    select: {
+      id: true,
+      sessionToken: true,
+      tenantId: true,
+      expires: true,
+      user: {
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          memberships: {
+            select: {
+              tenantId: true,
+              role: true,
+              isActive: true,
+              tenant: { select: { name: true, slug: true, deletedAt: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const session = sessionFromRecord(record);
+  if (!session && record) {
+    await db.session.delete({ where: { id: record.id } }).catch(() => undefined);
+  }
+  return session;
+});
+
+export async function deleteSession(sessionToken: string | undefined) {
+  if (!sessionToken) return;
+  await db.session.deleteMany({ where: { sessionToken } });
+}
+
+export async function getSessionToken() {
+  return (await cookies()).get(COOKIE_NAME)?.value;
+}

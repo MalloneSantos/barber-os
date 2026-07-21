@@ -1,20 +1,18 @@
 # Permissões e isolamento
 
-## Papéis
+`User` é a identidade global. `Membership` liga o usuário a um `Tenant` e define o papel. `Session.tenantId` guarda a única empresa ativa naquela sessão.
 
-- `OWNER`: acesso total, financeiro, auditoria e configurações.
-- `ADMIN` / `MANAGER`: operação ampla; alterações financeiras críticas podem ser limitadas.
-- `RECEPTIONIST`: agenda, clientes, fila e pagamentos presenciais, sem financeiro sensível.
-- `PROFESSIONAL`: própria agenda, clientes permitidos, comissão e desempenho.
-- `CUSTOMER`: somente o próprio perfil, reservas, pontos e histórico.
+| Capacidade | OWNER/ADMIN | MANAGER | RECEPTIONIST | PROFESSIONAL |
+|---|:---:|:---:|:---:|:---:|
+| Agenda e agendamentos | editar | editar | editar | própria agenda |
+| Clientes | editar | editar | editar | leitura |
+| Equipe | editar | editar | não | não |
+| Serviços | editar | editar | leitura | leitura |
+| Fila | editar | editar | editar | não |
+| Produtos/fidelidade | editar | editar | leitura limitada | não |
+| Financeiro | editar | leitura | não | não |
+| Configurações | editar | não | não | não |
 
-## Regra de servidor
+As páginas chamam `requirePermission`. Cada Server Action repete a autorização com `authorizeAction`. IDs enviados pelo navegador nunca definem o tenant; queries e `updateMany` incluem o `tenantId` da sessão. Recursos de outro tenant são tratados como inexistentes.
 
-Cada comando recebe `tenantId`, `userId`, `role` e permissões extras a partir da sessão. O identificador de tenant enviado pelo cliente é ignorado. Antes de acessar uma entidade, o repositório aplica `where: { tenantId: context.tenantId }`. Recursos encontrados fora do escopo resultam em `TENANT_MISMATCH` sem revelar sua existência.
-
-Permissões granulares: `finance:view`, `finance:edit`, `appointments:view`, `appointments:edit`, `customers:view`, `customers:edit`, `campaigns:create`, `team:edit`, `commissions:view` e `settings:edit`.
-
-## Evolução PostgreSQL
-
-RLS deve ser habilitado e forçado nas tabelas operacionais. A transação define `app.current_tenant_id`, e as policies comparam esse valor a `tenant_id`. A conexão da aplicação não deve usar superuser.
-
+RLS no PostgreSQL é uma evolução recomendada para defesa adicional; a conexão da aplicação não deverá usar superuser quando isso for ativado.

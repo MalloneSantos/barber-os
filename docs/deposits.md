@@ -1,14 +1,10 @@
-# Sistema de sinal
+# Sinal e cancelamento
 
-O tenant configura sinal fixo ou percentual, exigência por serviço, dispensa por cliente e antecedência mínima de cancelamento. Todo cálculo acontece em centavos.
+O tenant define `defaultDepositCents` e `cancellationNoticeHours`. O sinal fixo nunca supera o total do serviço.
 
-- `PENDING`: pagamento criado, ainda não confirmado.
-- `PAID`: sinal capturado.
-- `FAILED`: provedor recusou.
-- `REFUNDED`: valor devolvido.
-- `CONVERTED_TO_CREDIT`: cancelamento dentro do prazo.
-- `RETAINED_NO_SHOW`: falta ou cancelamento tardio.
-- `APPLIED_TO_SERVICE`: valor abatido do atendimento concluído.
+- reserva confirmada: cria `Payment(PAID)` e `Deposit(PAID)` via gateway simulado;
+- cancelamento com antecedência suficiente: depósito vira `CONVERTED_TO_CREDIT` e cria `Credit` para o cliente;
+- cancelamento tardio: depósito vira `RETAINED_NO_SHOW`;
+- uma reserva já cancelada/concluída não pode ser cancelada novamente.
 
-No MVP o gateway é simulado. Stripe real entra em `PaymentGateway`, usa webhook assinado como fonte de verdade e nunca recebe dados de cartão no servidor da aplicação.
-
+O MVP não captura nem devolve dinheiro real. Um adquirente deverá substituir `MockPaymentGateway`, usar idempotência, webhook assinado e nunca enviar dados brutos de cartão ao servidor da aplicação.

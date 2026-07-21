@@ -3,9 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-import { revenueTrend } from "@/data/demo";
-
-export function RevenueChart() {
+export function RevenueChart({ data }: { data: { label: string; revenue: number }[] }) {
   const mounted = useSyncExternalStore(
     () => () => undefined,
     () => true,
@@ -16,8 +14,8 @@ export function RevenueChart() {
 
   return (
     <div className="h-[250px] w-full">
-      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-        <AreaChart data={revenueTrend} margin={{ left: -24, right: 8, top: 12, bottom: 0 }}>
+      <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1} initialDimension={{ width: 800, height: 250 }}>
+        <AreaChart data={data} margin={{ left: -24, right: 8, top: 12, bottom: 0 }}>
           <defs>
             <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F5F5F5" stopOpacity={0.28} /><stop offset="100%" stopColor="#F5F5F5" stopOpacity={0} /></linearGradient>
           </defs>

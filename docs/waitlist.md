@@ -1,14 +1,10 @@
-# Fila de espera inteligente
+# Fila de espera
 
-Uma entrada guarda serviço, profissional opcional, data, intervalo disponível, antecedência mínima, quantidade de pessoas e pontos de prioridade. Quando uma vaga é liberada:
+Uma entrada persistida referencia tenant, cliente, serviço, profissional opcional, data, janela, antecedência mínima e prioridade.
 
-1. filtrar mesmo tenant, data, serviço, janela e duração;
-2. remover clientes sem antecedência mínima;
-3. ordenar por compatibilidade, fidelidade e entrada;
-4. criar `WaitlistOffer` com expiração de 5, 10 ou 15 minutos;
-5. enviar notificação interna e mensagem pelo adapter;
-6. o primeiro aceite válido confirma a reserva em transação;
-7. expiração oferece a vaga ao próximo candidato.
+- criar entrada valida que todos os recursos pertencem ao tenant da sessão;
+- oferecer vaga consulta a disponibilidade real dentro da janela;
+- a oferta cria `WaitlistOffer`, muda a entrada para `OFFERED` e grava uma `Notification` de WhatsApp simulada;
+- ofertas expiram em dez minutos no modelo.
 
-O MVP simula a oferta e exibe o ranking. A evolução usa fila de jobs com bloqueio `SKIP LOCKED` para impedir duas ofertas concorrentes sobre a mesma vaga.
-
+O MVP ainda não executa automaticamente expiração/aceite em background. Essa evolução requer fila de jobs e locking para garantir uma oferta ativa por vaga.

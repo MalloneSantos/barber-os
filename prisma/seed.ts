@@ -17,6 +17,48 @@ const lastNames = ["Lima", "Peeters", "Martins", "Hugo", "Jacobs", "Souza", "Ros
 
 async function seed() {
   const passwordHash = await hash("demo123", 12);
+  // O tenant de demonstração é reconstruído de forma controlada para que o seed
+  // seja repetível sem duplicar agenda, fila, notificações ou despesas.
+  await prisma.$transaction(async (tx) => {
+    const where = { tenantId };
+    await tx.auditLog.deleteMany({ where });
+    await tx.commissionEntry.deleteMany({ where });
+    await tx.review.deleteMany({ where });
+    await tx.rewardRedemption.deleteMany({ where });
+    await tx.loyaltyTransaction.deleteMany({ where });
+    await tx.campaignDelivery.deleteMany({ where });
+    await tx.notification.deleteMany({ where });
+    await tx.waitlistOffer.deleteMany({ where });
+    await tx.waitlistEntry.deleteMany({ where });
+    await tx.refund.deleteMany({ where });
+    await tx.deposit.deleteMany({ where });
+    await tx.payment.deleteMany({ where });
+    await tx.appointmentStatusHistory.deleteMany({ where });
+    await tx.appointmentService.deleteMany({ where });
+    await tx.saleItem.deleteMany({ where });
+    await tx.sale.deleteMany({ where });
+    await tx.appointment.deleteMany({ where });
+    await tx.inventoryMovement.deleteMany({ where });
+    await tx.commissionRule.deleteMany({ where });
+    await tx.customerSubscription.deleteMany({ where });
+    await tx.subscriptionPlan.deleteMany({ where });
+    await tx.reward.deleteMany({ where });
+    await tx.loyaltyProgram.deleteMany({ where });
+    await tx.campaign.deleteMany({ where });
+    await tx.expense.deleteMany({ where });
+    await tx.timeOff.deleteMany({ where });
+    await tx.availability.deleteMany({ where });
+    await tx.staffService.deleteMany({ where });
+    await tx.product.deleteMany({ where });
+    await tx.service.deleteMany({ where });
+    await tx.serviceCategory.deleteMany({ where });
+    await tx.staff.deleteMany({ where });
+    await tx.customer.deleteMany({ where });
+    await tx.businessUnit.deleteMany({ where });
+    await tx.session.deleteMany({ where });
+    await tx.membership.deleteMany({ where });
+    await tx.tenant.deleteMany({ where: { id: tenantId } });
+  });
   await prisma.tenant.upsert({
     where: { id: tenantId },
     update: {},
@@ -85,14 +127,26 @@ async function seed() {
 
   const now = new Date();
   now.setMinutes(0, 0, 0);
+  const completedAppointments: { id: string; customerId: string; staffId: string }[] = [];
   for (let index = 0; index < 42; index += 1) {
     const startsAt = new Date(now.getTime() + (index - 20) * 3_600_000);
     const service = services[index % services.length];
     const status = index < 18 ? AppointmentStatus.COMPLETED : index === 18 ? AppointmentStatus.NO_SHOW : AppointmentStatus.CONFIRMED;
     const appointment = await prisma.appointment.create({ data: { tenantId, customerId: customers[index].id, staffId: staff[index % staff.length].id, startsAt, endsAt: new Date(startsAt.getTime() + service.durationMinutes * 60_000), status, totalCents: service.priceCents, depositCents: 500, services: { create: { tenantId, serviceId: service.id, priceCents: service.priceCents, durationMinutes: service.durationMinutes } }, statusHistory: { create: { tenantId, toStatus: status } } } });
+    if (status === AppointmentStatus.COMPLETED) completedAppointments.push({ id: appointment.id, customerId: customers[index].id, staffId: staff[index % staff.length].id });
     const payment = await prisma.payment.create({ data: { tenantId, appointmentId: appointment.id, amountCents: 500, status: PaymentStatus.PAID, method: PaymentMethod.ONLINE, paidAt: startsAt } });
     await prisma.deposit.create({ data: { tenantId, appointmentId: appointment.id, paymentId: payment.id, amountCents: 500, status: status === AppointmentStatus.NO_SHOW ? PaymentStatus.RETAINED_NO_SHOW : PaymentStatus.PAID } });
     if (status === AppointmentStatus.COMPLETED) await prisma.loyaltyTransaction.create({ data: { tenantId, customerId: customers[index].id, type: LoyaltyTransactionType.EARN, points: 10 + Math.floor(service.priceCents / 100), description: service.name } });
+  }
+
+  const reviewCopies = [
+    "Atendimento preciso, ambiente impecável e um corte que continua bom semanas depois.",
+    "A consulta antes do corte faz toda diferença. Cada detalhe foi pensado.",
+    "Fácil de reservar, pontual e sem pressa. Virou meu endereço fixo.",
+  ];
+  for (let index = 0; index < reviewCopies.length; index += 1) {
+    const appointment = completedAppointments[index];
+    await prisma.review.create({ data: { tenantId, appointmentId: appointment.id, customerId: appointment.customerId, staffId: appointment.staffId, rating: 5, comment: reviewCopies[index], isPublic: true } });
   }
 
   for (let index = 0; index < 6; index += 1) await prisma.waitlistEntry.create({ data: { tenantId, customerId: customers[50 + index].id, serviceId: services[index % services.length].id, staffId: index % 2 === 0 ? staff[index % staff.length].id : null, desiredDate: new Date(), windowStartMinute: 960, windowEndMinute: 1140, minimumNoticeMinutes: 40, priorityScore: 100 - index * 4, status: WaitlistStatus.WAITING } });
@@ -109,8 +163,16 @@ async function seed() {
   await prisma.notification.create({ data: { tenantId, customerId: customers[0].id, channel: NotificationChannel.IN_APP, status: NotificationStatus.SENT, title: "Reserva confirmada", body: "Seu Corte Signature está confirmado para amanhã às 10:15.", sentAt: new Date() } });
   await prisma.expense.createMany({ data: [{ tenantId, category: "ALUGUEL", description: "Aluguel do espaço", amountCents: 320_000, dueAt: new Date(now.getFullYear(), now.getMonth(), 5), paidAt: new Date(now.getFullYear(), now.getMonth(), 3), method: PaymentMethod.TRANSFER }, { tenantId, category: "MARKETING", description: "Campanhas locais", amountCents: 48_000, dueAt: new Date(now.getFullYear(), now.getMonth(), 10), paidAt: new Date(now.getFullYear(), now.getMonth(), 9), method: PaymentMethod.CARD }] });
 
+  const secondTenantId = "tenant_north_cut";
+  await prisma.tenant.upsert({
+    where: { id: secondTenantId },
+    update: { name: "North Cut Demo", slug: "north-cut-demo" },
+    create: { id: secondTenantId, name: "North Cut Demo", slug: "north-cut-demo", city: "Antwerpen", units: { create: { name: "Central", address: "Demo Street 10, Antwerpen" } }, categories: { create: { name: "Serviços" } } },
+  });
+  const secondOwner = await prisma.user.upsert({ where: { email: "owner@northcut.be" }, update: { passwordHash }, create: { email: "owner@northcut.be", firstName: "Nora", lastName: "Janssen", passwordHash } });
+  await prisma.membership.upsert({ where: { tenantId_userId: { tenantId: secondTenantId, userId: secondOwner.id } }, update: { role: Role.OWNER, isActive: true }, create: { tenantId: secondTenantId, userId: secondOwner.id, role: Role.OWNER } });
+
   console.log("Seed concluído: AS Barber Club, 4 personas, 4 profissionais e 100 clientes.");
 }
 
 seed().finally(async () => prisma.$disconnect());
-

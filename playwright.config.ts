@@ -11,7 +11,7 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: "npm run dev -- --port 3107",
+    command: "npm run db:seed && npm run dev -- --port 3107",
     url: "http://localhost:3107",
     reuseExistingServer: false,
     timeout: 120_000,
