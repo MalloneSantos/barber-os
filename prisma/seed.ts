@@ -1,12 +1,12 @@
 import "dotenv/config";
 
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaLibSQL } from "@prisma/adapter-libsql";
 import { hash } from "bcryptjs";
 
 import { PrismaClient } from "../src/generated/prisma/client";
 import { AppointmentStatus, CampaignStatus, LoyaltyTransactionType, NotificationChannel, NotificationStatus, PaymentMethod, PaymentStatus, Role, WaitlistStatus } from "../src/generated/prisma/enums";
 
-const adapter = new PrismaBetterSqlite3({ url: process.env.DATABASE_URL! });
+const adapter = new PrismaLibSQL({ url: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 const tenantId = "tenant_as_barber";
 
