@@ -17,7 +17,7 @@ export default function LoginPage() {
       <CardHeader>
         <div className="mb-3 grid size-11 place-items-center rounded-2xl bg-primary/15 text-primary"><LockKeyhole /></div>
         <CardTitle className="font-heading text-2xl">Bem-vindo de volta</CardTitle>
-        <CardDescription>Entre no ambiente demonstrativo da AS Barber Club.</CardDescription>
+        <CardDescription>ntre no ambiente demonstrativo da AS Barber Club.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
         <LoginForm />
