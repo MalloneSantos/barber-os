@@ -1,15 +1,13 @@
 import "dotenv/config";
 
-import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { hash } from "bcryptjs";
 
 import { PrismaClient } from "../src/generated/prisma/client";
 import { AppointmentStatus, CampaignStatus, LoyaltyTransactionType, NotificationChannel, NotificationStatus, PaymentMethod, PaymentStatus, Role, WaitlistStatus } from "../src/generated/prisma/enums";
 
-const connectionString = process.env.DATABASE_URL;
-if (!connectionString) throw new Error("DATABASE_URL_MISSING");
-
-const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+const adapter = new PrismaBetterSqlite3({ url: process.env.DATABASE_URL! });
+const prisma = new PrismaClient({ adapter });
 const tenantId = "tenant_as_barber";
 
 const firstNames = ["Henrique", "Thomas", "Rafael", "Victor", "Noah", "Gabriel", "Matteo", "Arthur", "Miguel", "Samuel", "Louis", "Pedro", "Davi", "Jules", "Nicolas", "Daniel", "Felipe", "Antoine", "Leandro", "Bruno"];

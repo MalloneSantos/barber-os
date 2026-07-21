@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
 }
 
 enum Role {
@@ -107,10 +107,10 @@ model User {
   lastName      String
   phone         String?
   imageUrl      String?
-  emailVerified DateTime?    @db.Timestamptz(3)
-  createdAt     DateTime     @default(now()) @db.Timestamptz(3)
-  updatedAt     DateTime     @updatedAt @db.Timestamptz(3)
-  deletedAt     DateTime?    @db.Timestamptz(3)
+  emailVerified DateTime?   
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  deletedAt     DateTime?   
   accounts      Account[]
   sessions      Session[]
   memberships   Membership[]
@@ -142,7 +142,7 @@ model Session {
   sessionToken String   @unique
   userId       String
   tenantId     String
-  expires      DateTime @db.Timestamptz(3)
+  expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
@@ -167,9 +167,9 @@ model Tenant {
   cancellationNoticeHours  Int                        @default(24)
   defaultDepositCents      Int                        @default(500)
   marketingConsentText     String?
-  createdAt                DateTime                   @default(now()) @db.Timestamptz(3)
-  updatedAt                DateTime                   @updatedAt @db.Timestamptz(3)
-  deletedAt                DateTime?                  @db.Timestamptz(3)
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+  deletedAt                DateTime?                 
   units                    BusinessUnit[]
   memberships              Membership[]
   sessions                 Session[]
@@ -216,8 +216,8 @@ model BusinessUnit {
   phone     String?
   timezone  String   @default("Europe/Brussels")
   isActive  Boolean  @default(true)
-  createdAt DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, name])
@@ -229,10 +229,10 @@ model Membership {
   tenantId    String
   userId      String
   role        Role
-  permissions String[] @default([])
+  permissions String   @default("[]")
   isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -249,9 +249,9 @@ model Customer {
   lastName             String
   email                String?
   phone                String
-  birthDate            DateTime?              @db.Date
+  birthDate            DateTime?             
   marketingConsent     Boolean                @default(false)
-  consentRecordedAt    DateTime?              @db.Timestamptz(3)
+  consentRecordedAt    DateTime?             
   preferredStaffId     String?
   notes                String?
   status               String                 @default("ACTIVE")
@@ -259,10 +259,10 @@ model Customer {
   averageFrequencyDays Int?
   loyaltyPoints        Int                    @default(0)
   noShowCount          Int                    @default(0)
-  lastVisitAt          DateTime?              @db.Timestamptz(3)
-  createdAt            DateTime               @default(now()) @db.Timestamptz(3)
-  updatedAt            DateTime               @updatedAt @db.Timestamptz(3)
-  deletedAt            DateTime?              @db.Timestamptz(3)
+  lastVisitAt          DateTime?             
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  deletedAt            DateTime?             
   tenant               Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   appointments         Appointment[]
   credits              Credit[]
@@ -292,9 +292,9 @@ model Staff {
   color             String            @default("#8B5CF6")
   isBookable        Boolean           @default(true)
   commissionBps     Int               @default(4500)
-  createdAt         DateTime          @default(now()) @db.Timestamptz(3)
-  updatedAt         DateTime          @updatedAt @db.Timestamptz(3)
-  deletedAt         DateTime?         @db.Timestamptz(3)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  deletedAt         DateTime?        
   tenant            Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   user              User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   services          StaffService[]
@@ -315,8 +315,8 @@ model ServiceCategory {
   tenantId  String
   name      String
   sortOrder Int       @default(0)
-  createdAt DateTime  @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime  @updatedAt @db.Timestamptz(3)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   services  Service[]
 
@@ -337,9 +337,9 @@ model Service {
   depositRequired     Boolean              @default(true)
   isCombo             Boolean              @default(false)
   isActive            Boolean              @default(true)
-  createdAt           DateTime             @default(now()) @db.Timestamptz(3)
-  updatedAt           DateTime             @updatedAt @db.Timestamptz(3)
-  deletedAt           DateTime?            @db.Timestamptz(3)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  deletedAt           DateTime?           
   tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   category            ServiceCategory      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   staff               StaffService[]
@@ -376,8 +376,8 @@ model Availability {
   endMinute        Int
   breakStartMinute Int?
   breakEndMinute   Int?
-  validFrom        DateTime? @db.Date
-  validUntil       DateTime? @db.Date
+  validFrom        DateTime?
+  validUntil       DateTime?
   tenant           Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   staff            Staff     @relation(fields: [staffId], references: [id], onDelete: Cascade)
 
@@ -390,8 +390,8 @@ model TimeOff {
   id       String   @id @default(cuid())
   tenantId String
   staffId  String
-  startsAt DateTime @db.Timestamptz(3)
-  endsAt   DateTime @db.Timestamptz(3)
+  startsAt DateTime
+  endsAt   DateTime
   reason   String?
   tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   staff    Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
@@ -405,16 +405,16 @@ model Appointment {
   tenantId          String
   customerId        String
   staffId           String
-  startsAt          DateTime                   @db.Timestamptz(3)
-  endsAt            DateTime                   @db.Timestamptz(3)
+  startsAt          DateTime                  
+  endsAt            DateTime                  
   status            AppointmentStatus          @default(PENDING)
   source            String                     @default("ONLINE")
   notes             String?
   totalCents        Int
   depositCents      Int                        @default(0)
-  createdAt         DateTime                   @default(now()) @db.Timestamptz(3)
-  updatedAt         DateTime                   @updatedAt @db.Timestamptz(3)
-  deletedAt         DateTime?                  @db.Timestamptz(3)
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+  deletedAt         DateTime?                 
   tenant            Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   customer          Customer                   @relation(fields: [customerId], references: [id], onDelete: Restrict)
   staff             Staff                      @relation(fields: [staffId], references: [id], onDelete: Restrict)
@@ -456,7 +456,7 @@ model AppointmentStatusHistory {
   toStatus      AppointmentStatus
   reason        String?
   changedById   String?
-  createdAt     DateTime           @default(now()) @db.Timestamptz(3)
+  createdAt     DateTime           @default(now())
   tenant        Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   appointment   Appointment        @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
 
@@ -474,9 +474,9 @@ model Payment {
   method        PaymentMethod
   externalId    String?
   metadata      Json?
-  paidAt        DateTime?     @db.Timestamptz(3)
-  createdAt     DateTime      @default(now()) @db.Timestamptz(3)
-  updatedAt     DateTime      @updatedAt @db.Timestamptz(3)
+  paidAt        DateTime?    
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   tenant        Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   appointment   Appointment?  @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
   sale          Sale?         @relation(fields: [saleId], references: [id], onDelete: SetNull)
@@ -495,8 +495,8 @@ model Deposit {
   paymentId     String        @unique
   amountCents   Int
   status        PaymentStatus
-  createdAt     DateTime      @default(now()) @db.Timestamptz(3)
-  updatedAt     DateTime      @updatedAt @db.Timestamptz(3)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   tenant        Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   appointment   Appointment   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
   payment       Payment       @relation(fields: [paymentId], references: [id], onDelete: Restrict)
@@ -510,9 +510,9 @@ model Credit {
   customerId   String
   amountCents  Int
   balanceCents Int
-  expiresAt    DateTime? @db.Timestamptz(3)
+  expiresAt    DateTime?
   reason       String
-  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+  createdAt    DateTime  @default(now())
   tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   customer     Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
@@ -527,7 +527,7 @@ model Refund {
   amountCents Int
   status      String
   reason      String?
-  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  createdAt   DateTime @default(now())
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   payment     Payment  @relation(fields: [paymentId], references: [id], onDelete: Restrict)
 
@@ -541,15 +541,15 @@ model WaitlistEntry {
   customerId           String
   serviceId            String
   staffId              String?
-  desiredDate          DateTime        @db.Date
+  desiredDate          DateTime       
   windowStartMinute    Int
   windowEndMinute      Int
   minimumNoticeMinutes Int             @default(40)
   partySize            Int             @default(1)
   priorityScore        Int             @default(0)
   status               WaitlistStatus  @default(WAITING)
-  createdAt            DateTime        @default(now()) @db.Timestamptz(3)
-  updatedAt            DateTime        @updatedAt @db.Timestamptz(3)
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
   tenant               Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   customer             Customer        @relation(fields: [customerId], references: [id], onDelete: Cascade)
   service              Service         @relation(fields: [serviceId], references: [id], onDelete: Cascade)
@@ -567,11 +567,11 @@ model WaitlistOffer {
   id              String         @id @default(cuid())
   tenantId        String
   waitlistEntryId String
-  offeredStartsAt DateTime       @db.Timestamptz(3)
-  expiresAt       DateTime       @db.Timestamptz(3)
+  offeredStartsAt DateTime      
+  expiresAt       DateTime      
   status          WaitlistStatus @default(OFFERED)
-  acceptedAt      DateTime?      @db.Timestamptz(3)
-  createdAt       DateTime       @default(now()) @db.Timestamptz(3)
+  acceptedAt      DateTime?     
+  createdAt       DateTime       @default(now())
   tenant          Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   waitlistEntry   WaitlistEntry  @relation(fields: [waitlistEntryId], references: [id], onDelete: Cascade)
 
@@ -604,9 +604,9 @@ model Notification {
   title      String
   body       String
   metadata   Json?
-  readAt     DateTime?           @db.Timestamptz(3)
-  sentAt     DateTime?           @db.Timestamptz(3)
-  createdAt  DateTime            @default(now()) @db.Timestamptz(3)
+  readAt     DateTime?          
+  sentAt     DateTime?          
+  createdAt  DateTime            @default(now())
   tenant     Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   customer   Customer?           @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
@@ -625,11 +625,11 @@ model Campaign {
   benefitValue    Int?
   code            String?
   message         String
-  startsAt        DateTime?          @db.Timestamptz(3)
-  endsAt          DateTime?          @db.Timestamptz(3)
+  startsAt        DateTime?         
+  endsAt          DateTime?         
   usageLimit      Int?
-  createdAt       DateTime           @default(now()) @db.Timestamptz(3)
-  updatedAt       DateTime           @updatedAt @db.Timestamptz(3)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
   tenant          Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   deliveries      CampaignDelivery[]
 
@@ -643,10 +643,10 @@ model CampaignDelivery {
   campaignId   String
   customerId   String
   status       String
-  viewedAt     DateTime? @db.Timestamptz(3)
-  convertedAt  DateTime? @db.Timestamptz(3)
+  viewedAt     DateTime?
+  convertedAt  DateTime?
   revenueCents Int       @default(0)
-  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+  createdAt    DateTime  @default(now())
   tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   campaign     Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   customer     Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
@@ -665,7 +665,7 @@ model LoyaltyProgram {
   pointsPerEuro    Int      @default(1)
   pointsExpireDays Int?
   isActive         Boolean  @default(true)
-  createdAt        DateTime @default(now()) @db.Timestamptz(3)
+  createdAt        DateTime @default(now())
   tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, name])
@@ -679,8 +679,8 @@ model LoyaltyTransaction {
   type        LoyaltyTransactionType
   points      Int
   description String
-  expiresAt   DateTime?              @db.Timestamptz(3)
-  createdAt   DateTime               @default(now()) @db.Timestamptz(3)
+  expiresAt   DateTime?             
+  createdAt   DateTime               @default(now())
   tenant      Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   customer    Customer               @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
@@ -711,7 +711,7 @@ model RewardRedemption {
   customerId  String
   pointsSpent Int
   status      String
-  redeemedAt  DateTime @default(now()) @db.Timestamptz(3)
+  redeemedAt  DateTime @default(now())
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   reward      Reward   @relation(fields: [rewardId], references: [id], onDelete: Restrict)
   customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
@@ -736,9 +736,9 @@ model Product {
   commissionBps   Int                 @default(0)
   imageUrl        String?
   isActive        Boolean             @default(true)
-  createdAt       DateTime            @default(now()) @db.Timestamptz(3)
-  updatedAt       DateTime            @updatedAt @db.Timestamptz(3)
-  deletedAt       DateTime?           @db.Timestamptz(3)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  deletedAt       DateTime?          
   tenant          Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   movements       InventoryMovement[]
   saleItems       SaleItem[]
@@ -756,7 +756,7 @@ model InventoryMovement {
   type      InventoryMovementType
   quantity  Int
   reason    String?
-  createdAt DateTime              @default(now()) @db.Timestamptz(3)
+  createdAt DateTime              @default(now())
   tenant    Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   product   Product               @relation(fields: [productId], references: [id], onDelete: Cascade)
 
@@ -771,7 +771,7 @@ model Sale {
   appointmentId String?       @unique
   totalCents    Int
   paymentMethod PaymentMethod
-  createdAt     DateTime      @default(now()) @db.Timestamptz(3)
+  createdAt     DateTime      @default(now())
   tenant        Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   customer      Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
   appointment   Appointment?  @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
@@ -806,10 +806,10 @@ model Expense {
   category    String
   description String
   amountCents Int
-  dueAt       DateTime       @db.Date
-  paidAt      DateTime?      @db.Timestamptz(3)
+  dueAt       DateTime      
+  paidAt      DateTime?     
   method      PaymentMethod?
-  createdAt   DateTime       @default(now()) @db.Timestamptz(3)
+  createdAt   DateTime       @default(now())
   tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, dueAt, paidAt])
@@ -842,8 +842,8 @@ model CommissionEntry {
   appointmentId String?
   amountCents   Int
   status        String       @default("PENDING")
-  paidAt        DateTime?    @db.Timestamptz(3)
-  createdAt     DateTime     @default(now()) @db.Timestamptz(3)
+  paidAt        DateTime?   
+  createdAt     DateTime     @default(now())
   tenant        Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   staff         Staff        @relation(fields: [staffId], references: [id], onDelete: Cascade)
   appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
@@ -861,7 +861,7 @@ model Review {
   rating        Int
   comment       String?
   isPublic      Boolean     @default(false)
-  createdAt     DateTime    @default(now()) @db.Timestamptz(3)
+  createdAt     DateTime    @default(now())
   tenant        Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   customer      Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
   staff         Staff       @relation(fields: [staffId], references: [id], onDelete: Cascade)
@@ -894,11 +894,11 @@ model CustomerSubscription {
   customerId String
   planId     String
   status     SubscriptionStatus @default(TRIAL)
-  startsAt   DateTime           @db.Timestamptz(3)
-  renewsAt   DateTime?          @db.Timestamptz(3)
+  startsAt   DateTime          
+  renewsAt   DateTime?         
   usage      Json?
-  createdAt  DateTime           @default(now()) @db.Timestamptz(3)
-  updatedAt  DateTime           @updatedAt @db.Timestamptz(3)
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
   tenant     Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   customer   Customer           @relation(fields: [customerId], references: [id], onDelete: Cascade)
   plan       SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Restrict)
@@ -918,7 +918,7 @@ model AuditLog {
   previousValue Json?
   newValue      Json?
   ipAddress     String?
-  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+  createdAt     DateTime @default(now())
   tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
